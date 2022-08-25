@@ -6,11 +6,11 @@ RUN sed -i "s@http://.*archive.ubuntu.com@http://mirrors.tuna.tsinghua.edu.cn@g"
 		&& sed -i "s@http://.*security.ubuntu.com@http://mirrors.tuna.tsinghua.edu.cn@g" /etc/apt/sources.list \
 		&& apt-get clean \
 		&& apt-get update
-RUN apt-get install -y --no-install-recommends ffmpeg libportaudio2 git vim curl python3.7 \
+RUN apt-get install -y --no-install-recommends ffmpeg ca-certificates libportaudio2 git vim curl python3.7 \
 		&& ln -sf /usr/bin/python3.7 /usr/bin/python \
 		&& apt-get install -y --no-install-recommends build-essential python3.7-dev python3-distutils \
 #		&& rm -rf /var/lib/apt/lists/* \
-		&& curl -fsSL -o- https://bootstrap.pypa.io/get-pip.py | python 
+		&& curl -fsSL -o- https://bootstrap.pypa.io/get-pip.py -k | python 
 
 WORKDIR /usr/src/app
 
@@ -21,4 +21,3 @@ RUN pip3 config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple \
 	&& cd Real-Time-Voice-Cloning \
 	&& pip3 install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 
-ADD ../saved_models /usr/src/app/Real-Time-Voice-Cloning
