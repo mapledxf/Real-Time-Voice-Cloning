@@ -11,6 +11,7 @@ import soundfile as sf
 import umap
 from PyQt5.QtCore import Qt, QStringListModel
 from PyQt5.QtWidgets import *
+from PyQt5 import QtGui
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 
 from encoder.inference import plot_embedding_as_heatmap
@@ -61,18 +62,18 @@ class UI(QDialog):
 
     def draw_embed(self, embed, name, which):
         embed_ax, _ = self.current_ax if which == "current" else self.gen_ax
-        embed_ax.figure.suptitle("" if embed is None else name)
+        #embed_ax.figure.suptitle("" if embed is None else name, fontsize=5)
 
         ## Embedding
         # Clear the plot
-        if len(embed_ax.images) > 0:
-            embed_ax.images[0].colorbar.remove()
+        #if len(embed_ax.images) > 0:
+        #    embed_ax.images[0].colorbar.remove()
         embed_ax.clear()
 
         # Draw the embed
         if embed is not None:
             plot_embedding_as_heatmap(embed, embed_ax)
-            embed_ax.set_title("embedding")
+            embed_ax.set_title("embedding", fontsize=5)
         embed_ax.set_aspect("equal", "datalim")
         embed_ax.set_xticks([])
         embed_ax.set_yticks([])
@@ -86,7 +87,7 @@ class UI(QDialog):
         spec_ax.clear()
         if spec is not None:
             spec_ax.imshow(spec, aspect="auto", interpolation="none")
-            spec_ax.set_title("mel spectrogram")
+            spec_ax.set_title("mel spectrogram", fontsize=5)
 
         spec_ax.set_xticks([])
         spec_ax.set_yticks([])
@@ -105,8 +106,8 @@ class UI(QDialog):
         if len(utterances) < self.min_umap_points:
             self.umap_ax.text(.5, .5, "Add %d more points to\ngenerate the projections" %
                               (self.min_umap_points - len(utterances)),
-                              horizontalalignment='center', fontsize=15)
-            self.umap_ax.set_title("")
+                              horizontalalignment='center', fontsize=5)
+            self.umap_ax.set_title("", fontsize=5)
 
         # Compute the projections
         else:
@@ -425,7 +426,11 @@ class UI(QDialog):
         ## Initialize the application
         self.app = QApplication(sys.argv)
         super().__init__(None)
-        self.setWindowTitle("SV2TTS toolbox")
+        self.setWindowTitle("VWM Voice Clone")
+        font = QtGui.QFont()
+        font.setFamily("Arial")
+        font.setPointSize(15)
+        #self.setFont(font)
 
 
         ## Main layouts
@@ -541,7 +546,7 @@ class UI(QDialog):
         ## Embed & spectrograms
         vis_layout.addStretch()
 
-        gridspec_kw = {"width_ratios": [1, 4]}
+        gridspec_kw = {"width_ratios": [1, 5]}
         fig, self.current_ax = plt.subplots(1, 2, figsize=(10, 2.25), facecolor="#F0F0F0",
                                             gridspec_kw=gridspec_kw)
         fig.subplots_adjust(left=0, bottom=0.1, right=1, top=0.8)

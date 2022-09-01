@@ -10,8 +10,12 @@ from encoder import inference as encoder
 from synthesizer.inference import Synthesizer
 from toolbox.ui import UI
 from toolbox.utterance import Utterance
-from vocoder import inference as vocoder
+#from vocoder import inference as vocoder
+from vocoder.hifigan import inference as vocoder
+from utils.dsp import DSP
 
+dsp = DSP()
+dsp.init()
 
 # Use this directory structure for your datasets, or modify it to fit your needs
 recognized_datasets = [
@@ -155,6 +159,7 @@ class Toolbox:
         # Get the wav from the disk. We take the wav with the vocoder/synthesizer format for
         # playback, so as to have a fair comparison with the generated audio
         wav = Synthesizer.load_preprocess_wav(fpath)
+        wav = dsp.denoise(wav, encoder.sampling_rate)
         self.ui.log("Loaded %s" % name)
 
         self.add_real_utterance(wav, name, speaker_name)
@@ -163,7 +168,8 @@ class Toolbox:
         wav = self.ui.record_one(encoder.sampling_rate, 5)
         if wav is None:
             return
-        self.ui.play(wav, encoder.sampling_rate)
+        wav = dsp.denoise(wav, encoder.sampling_rate)
+        #self.ui.play(wav, encoder.sampling_rate)
 
         speaker_name = "user01"
         name = speaker_name + "_rec_%05d" % np.random.randint(100000)
@@ -211,7 +217,7 @@ class Toolbox:
         if self.synthesizer is None or seed is not None:
             self.init_synthesizer()
 
-        texts = self.ui.text_prompt.toPlainText().split("\n")
+        texts = self.ui.text_prompt.toPlainText().strip().split("\n")
         embed = self.ui.selected_utterance.embed
         embeds = [embed] * len(texts)
         specs = self.synthesizer.synthesize_spectrograms(texts, embeds)
@@ -242,8 +248,8 @@ class Toolbox:
 
         def vocoder_progress(i, seq_len, b_size, gen_rate):
             real_time_factor = (gen_rate / Synthesizer.sample_rate) * 1000
-            line = "Waveform generation: %d/%d (batch size: %d, rate: %.1fkHz - %.2fx real time)" \
-                   % (i * b_size, seq_len * b_size, b_size, gen_rate, real_time_factor)
+            line = "Waveform generation: (batch size: %d, rate: %.1fkHz - %.2fx real time)" \
+                   % (b_size, gen_rate, real_time_factor)
             self.ui.log(line, "overwrite")
             self.ui.set_loading(i, seq_len)
         if self.ui.current_vocoder_fpath is not None:
@@ -268,7 +274,7 @@ class Toolbox:
 
         # Play it
         wav = wav / np.abs(wav).max() * 0.97
-        self.ui.play(wav, Synthesizer.sample_rate)
+        #self.ui.play(wav, Synthesizer.sample_rate)
 
         # Name it (history displayed in combobox)
         # TODO better naming for the combobox items?
