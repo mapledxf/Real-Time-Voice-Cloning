@@ -14,7 +14,7 @@ sys.settrace
 class DSP():
 
     def init(self, sample_rate, nr_type, level):
-        self.so = ctypes.CDLL("./libnr.so")
+        self.so = ctypes.CDLL("./libnr.dylib")
 
         self.so.nr_init.argtypes=[ctypes.c_int, ctypes.c_int, ctypes.c_int]
         self.so.nr_process.restype=ctypes.POINTER(ctypes.c_short)
